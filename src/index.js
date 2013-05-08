@@ -46,14 +46,101 @@ var MetricsSrv = IgeEventingClass.extend({
 		});
 	},
 	
+	allowCrossDomain: function(req, res, next) {
+		var self = this;
+		
+		req.params = req.params || {};
+
+		// Check the origin matches the allowed list by regex
+		var origin = req.headers.origin,
+			match,
+			domain,
+			domainHost,
+			domainArr = self.originDomains;
+
+		if (origin) {
+			// Check the DB for allowed domains
+			// Loop the allowed domains and check for a match
+			while (match === -1 && (domain = domainArr.shift())) {
+				domainHost = domain.host;
+				
+				if (domainHost) {
+					// Convert the domain to a regex
+					domainHost = domainHost.replace(/\./g, "\\.");
+					domainHost = domainHost.replace(/\*/g, ".*?");
+					
+					match = origin.search(new RegExp(domainHost));
+				}
+			}
+			
+			if (match > -1) {
+				res.header('Access-Control-Allow-Origin', origin);
+				res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+				res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+				
+				// intercept OPTIONS method
+				if ('OPTIONS' == req.method) {
+					res.send(200);
+				} else {
+					next();
+				}
+			} else {
+				res.header('Access-Control-Allow-Origin', 'http://www.open-metrics.com');
+				res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+				res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+			
+				// intercept OPTIONS method
+				if ('OPTIONS' == req.method) {
+					res.send(200);
+				} else {
+					next();
+				}
+			}
+		} else {
+			// intercept OPTIONS method
+			if ('OPTIONS' == req.method) {
+				res.send(200);
+			} else {
+				next();
+			}
+		}
+	},
+	
+	acceptIeXdrCrap: function (req, res, next) {
+		// Force a content type header when none exists
+		if (!req.headers['content-type']) {
+			req.headers['content-type'] = 'application/x-www-form-urlencoded';
+		}
+		
+		next();
+	},
+	
 	startServer: function () {
 		var self = this;
 		
+		// Grab a list of allowed domain origins from the DB
+		self.monge.metrics.query('domain', {}, {}, function (err, domainArr) {
+			if (!err && domainArr) {
+				self.originDomains = domainArr;
+			} else {
+				// No origin domains setup
+				console.log('Error, please add at least one origin domain to the domain collection.');
+				process.exit();
+			}
+		});
+		
+		// Setup cross-domain security
+		this.route.use(function () { self.allowCrossDomain.apply(self, arguments); });
+		this.route.use(this.acceptIeXdrCrap);
+		
+		// Parse POST messages into query strings
+		this.route.use(this.express.bodyParser());
+		
 		// Setup endpoint objects
-		//self.endPoint.action = require('./endPoint/action.js').setup(this);
+		this.endPoint.action = require('./endPoint/action.js').setup(this);
 		
 		// Listen for connections
-		
+		this.route.listen(this.options.port);
 	},
 	
 	md5: function (str) {
