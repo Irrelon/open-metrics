@@ -8,7 +8,7 @@ var Routing = EndPoint.extend({
 		this.app = app;
 		
 		// Setup routes
-		this.app.route.get(this.app.apiRootPath + '/action/:name', function (req, res) { self.handle.apply(self, [req, res, 'create']); });
+		this.app.route.get(this.app.apiRootPath + '/action/:actionName', function (req, res) { self.handle.apply(self, [req, res, 'create']); });
 		
 		return this;
 	},
@@ -16,7 +16,7 @@ var Routing = EndPoint.extend({
 	create: function (params, query, reqRes, callback) {
 		var self = this;
 		
-		if (params.name && query._omi) {
+		if (params.actionName && query._omi) {
 			// Convert omi into database object id
 			var omi = query._omi;
 			try {
@@ -31,17 +31,20 @@ var Routing = EndPoint.extend({
 			}, {}, function (err, omiData) {
 				if (!err && omiData) {
 					// Check if there is a custom action handler
-					if (self.app.actionHandler[params.name]) {
+					if (self.app.actionHandler[params.actionName]) {
+						// Call the action handler and only insert when complete
 						
 					} else {
+						// No action handler, insert all query data
+						// Record the action
+						self.app.monge.metrics.insert('action', {
+							_omi: query._omi,
+							action: params.actionName,
+							query: query
+						}, {}, function () {});
 						
+						callback(false);
 					}
-					// Record the action
-					self.app.monge.metrics.insert('action', {
-						_omi: query._omi
-					}, {}, function () {});
-					
-					callback(false);
 				} else {
 					callback('Invalid OMI.');
 				}
