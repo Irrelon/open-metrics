@@ -1,0 +1,18 @@
+{
+	"author": "Rob Evans (Irrelon Software Limited)",
+	"name": "Open-Metrics-Server",
+	"description": "Open Metrics Server - Realtime Metrics Platform.",
+	"version": "1.0.0",
+	"dependencies": {
+		"forever": "*",
+		"express": "3.x",
+		"commander": "1.x",
+		"monge": "*",
+		"request": "2.12.0",
+		"async": "*"
+	},
+	"main": "./src/index",
+	"engines": {
+		"node": "*"
+	}
+}
