@@ -29,7 +29,7 @@ Omi.prototype._api = function (url, data, type, options, callback) {
 		}
 		
 		self.jQuery.ajax({
-			url: ':' + self.apiPort + self.apiEndPoint + url,
+			url: this.apiHost + ':' + self.apiPort + self.apiEndPoint + url,
 			async: options.async,
 			data: data,
 			global: false,
