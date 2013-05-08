@@ -2,6 +2,7 @@ var Omi = function (jQuery) {
 	if (jQuery) {
 		this._omi = '';
 		this.jQuery = jQuery;
+		this.apiHost = '';
 		this.apiVersion = '1.0';
 		this.apiEndPoint = '/v' + this.apiVersion;
 		this.apiPort = 22595;
