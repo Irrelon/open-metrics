@@ -38,7 +38,7 @@ var Routing = EndPoint.extend({
 						// No action handler, insert all query data
 						// Record the action
 						self.app.monge.metrics.insert('action', {
-							_omi: params.omi,
+							_omi: omi,
 							action: params.actionName,
 							query: query
 						}, {}, function () {});
@@ -55,8 +55,10 @@ var Routing = EndPoint.extend({
 	},
 	
 	backFill: function (params, query, reqRes, callback) {
+		callback(false);
+		return;
 		var self = this;
-		
+		console.log('back filling');
 		if (params.omi) {
 			// Convert omi into database object id
 			var omi = params.omi;
@@ -72,17 +74,26 @@ var Routing = EndPoint.extend({
 			}, {}, function (err, omiData) {
 				if (!err && omiData) {
 					// Backfill existing action data with this new data
-					self.app.monge.metrics.update('action', {
-						_omi: params.omi,
+					query.backFill = true;
+					console.log({
+						_omi: omi,
 						backFill: {
 							'$exists': false
 						}
-					}, {
-						query: query,
-						backFill: true
-					}, function () {});
-						
-					callback(false);
+					}, query);
+					self.app.monge.metrics.update('action', {
+						_omi: omi,
+						backFill: {
+							'$exists': false
+						}
+					}, query, function (err, updatedCount) {
+						if (err) {
+							console.log('Could not update!', err);
+							callback(err);
+						} else {
+							callback(false, {updated: updatedCount});
+						}
+					});
 				} else {
 					callback('Invalid OMI.');
 				}

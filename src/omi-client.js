@@ -1,5 +1,6 @@
 var Omi = function (jQuery, options) {
 	if (jQuery) {
+		var self = this;
 		options = options || {};
 		
 		this._omi = '';
@@ -20,7 +21,7 @@ var Omi = function (jQuery, options) {
 		}
 		
 		// Hook onunload to send a session end
-		jQuery(window).on('unload', this.unload);
+		jQuery(window).on('unload', function () { self.unload(); });
 		
 		// Start
 		this.start();
@@ -129,13 +130,13 @@ Omi.prototype.action = function (name, data, options, callback) {
 	}
 };
 
-Omi.prototype.backFill = function (data) {
+Omi.prototype.backFill = function (data, callback) {
 	if (this.jQuery && data) {
 		var self = this;
 		callback = callback || function () {};
 		
 		if (self._omi) {
-			self._api('/action/' + self._omi + '/backFill', data, 'POST', options, callback);
+			self._api('/action/' + self._omi + '/_backFill', data, 'POST', {}, callback);
 		} else {
 			callback('No OMI, cannot log action.');
 		}
@@ -159,6 +160,8 @@ Omi.prototype.start = function () {
 };
 
 Omi.prototype.unload = function () {
+	var self = this;
+	
 	// Register a session unload action
 	self.action('unload', {}, {
 		async: false
