@@ -78,7 +78,8 @@ var Routing = EndPoint.extend({
 							'$exists': false
 						}
 					}, {
-						backFill: query
+						query: query,
+						backFill: true
 					}, function () {});
 						
 					callback(false);
