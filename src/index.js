@@ -4,14 +4,14 @@ var IgeClass = require('../lib/IgeClass'),
 	IgeEventingClass = require('../lib/IgeEventingClass');
 
 var MetricsSrv = IgeEventingClass.extend({
-	classId: 'App.EventSrv',
+	classId: 'App.MetricsSrv',
 	
 	init: function () {
 		var self = this;
 		
 		this.options = {
-			port: 8000,
-			version: 'v1.1'
+			port: 22595,
+			version: 'v1.0'
 		};
 		
 		this.apiRootPath = '/' + this.options.version;
@@ -137,6 +137,7 @@ var MetricsSrv = IgeEventingClass.extend({
 		this.route.use(this.express.bodyParser());
 		
 		// Setup endpoint objects
+		this.endPoint.session = require('./endPoint/session.js').setup(this);
 		this.endPoint.action = require('./endPoint/action.js').setup(this);
 		
 		// Listen for connections

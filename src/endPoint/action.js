@@ -8,7 +8,7 @@ var Routing = EndPoint.extend({
 		this.app = app;
 		
 		// Setup routes
-		this.app.route.get(this.app.apiRootPath + '/action/:actionName', function (req, res) { self.handle.apply(self, [req, res, 'create']); });
+		this.app.route.post(this.app.apiRootPath + '/action/:actionName', function (req, res) { self.handle.apply(self, [req, res, 'create']); });
 		
 		return this;
 	},
@@ -31,12 +31,13 @@ var Routing = EndPoint.extend({
 			}, {}, function (err, omiData) {
 				if (!err && omiData) {
 					// Check if there is a custom action handler
-					if (self.app.actionHandler[params.actionName]) {
+					if (self.app.actionHandler && self.app.actionHandler[params.actionName]) {
 						// Call the action handler and only insert when complete
 						
 					} else {
 						// No action handler, insert all query data
 						// Record the action
+						delete query._omi;
 						self.app.monge.metrics.insert('action', {
 							_omi: query._omi,
 							action: params.actionName,
