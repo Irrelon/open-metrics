@@ -73,8 +73,13 @@ var Routing = EndPoint.extend({
 				if (!err && omiData) {
 					// Backfill existing action data with this new data
 					self.app.monge.metrics.update('action', {
-						_omi: params.omi
-					}, query, function () {});
+						_omi: params.omi,
+						backFill: {
+							'$exists': false
+						}
+					}, {
+						backFill: query
+					}, function () {});
 						
 					callback(false);
 				} else {
