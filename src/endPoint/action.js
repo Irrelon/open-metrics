@@ -8,6 +8,7 @@ var Routing = EndPoint.extend({
 		this.app = app;
 		
 		// Setup routes
+		this.app.route.post(this.app.apiRootPath + '/action/:omi/_backFill', function (req, res) { self.handle.apply(self, [req, res, 'backFill']); });
 		this.app.route.post(this.app.apiRootPath + '/action/:omi/:actionName', function (req, res) { self.handle.apply(self, [req, res, 'create']); });
 		
 		return this;
@@ -44,6 +45,38 @@ var Routing = EndPoint.extend({
 						
 						callback(false);
 					}
+				} else {
+					callback('Invalid OMI.');
+				}
+			});
+		} else {
+			callback('Invalid call, missing data.')
+		}
+	},
+	
+	backFill: function (params, query, reqRes, callback) {
+		var self = this;
+		
+		if (params.omi) {
+			// Convert omi into database object id
+			var omi = params.omi;
+			try {
+				omi = self.app.monge.metrics.toId(omi);
+			} catch (e) {
+				callback('Invalid OMI.');
+			}
+			
+			// Check the OMI exists
+			self.app.monge.metrics.queryOne('session', {
+				_id: omi
+			}, {}, function (err, omiData) {
+				if (!err && omiData) {
+					// Backfill existing action data with this new data
+					self.app.monge.metrics.update('action', {
+						_omi: params.omi
+					}, query, function () {});
+						
+					callback(false);
 				} else {
 					callback('Invalid OMI.');
 				}

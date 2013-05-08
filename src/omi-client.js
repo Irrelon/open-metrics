@@ -129,6 +129,19 @@ Omi.prototype.action = function (name, data, options, callback) {
 	}
 };
 
+Omi.prototype.backFill = function (data) {
+	if (this.jQuery && data) {
+		var self = this;
+		callback = callback || function () {};
+		
+		if (self._omi) {
+			self._api('/action/' + self._omi + '/backFill', data, 'POST', options, callback);
+		} else {
+			callback('No OMI, cannot log action.');
+		}
+	}
+};
+
 Omi.prototype.start = function () {
 	var self = this;
 	
