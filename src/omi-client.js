@@ -4,13 +4,16 @@ var Omi = function (jQuery) {
 		this.jQuery = jQuery;
 		this.apiVersion = '1.0';
 		this.apiEndPoint = '/v' + this.apiVersion;
+		this.apiPort = 22595;
 	} else {
-		// No jQuery passed
+		// No jQuery passed, fail silently
 	}
 };
 
 Omi.prototype._api = function (url, data, type, options, callback) {
 	if (this.jQuery) {
+		var self = this;
+		
 		// Create an options object if not passed
 		options = options || {};
 		
@@ -24,8 +27,8 @@ Omi.prototype._api = function (url, data, type, options, callback) {
 			type = 'POST';
 		}
 		
-		this.jQuery.ajax({
-			url: this.apiEndPoint + url,
+		self.jQuery.ajax({
+			url: ':' + self.apiPort + self.apiEndPoint + url,
 			async: options.async,
 			data: data,
 			global: false,
@@ -70,6 +73,7 @@ Omi.prototype.session = function (callback) {
 Omi.prototype.action = function (name, data, callback) {
 	if (this.jQuery) {
 		var self = this;
+		
 		if (self._omi) {
 			self._api(self.apiEndPoint + '/action/' + name, data, 'POST', {}, callback);
 		} else {
