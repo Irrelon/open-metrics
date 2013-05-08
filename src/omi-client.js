@@ -122,7 +122,7 @@ Omi.prototype.action = function (name, data, options, callback) {
 		}
 		
 		if (self._omi) {
-			self._api('/action/' + name, data, 'POST', options, callback);
+			self._api('/action/' + self._omi + '/' + name, data, 'POST', options, callback);
 		} else {
 			callback('No OMI, cannot log action.');
 		}
@@ -250,7 +250,3 @@ Omi.prototype.cookiePlugin = function (jQuery) {
 	
 	}));
 };
-
-var omi = new Omi($, {
-	host: 'http://api.orbzu.com'
-});
